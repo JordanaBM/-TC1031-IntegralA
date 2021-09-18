@@ -20,7 +20,7 @@ int main(){
 
 
 //Calcular calorías ejemplo
-	persona.calculaCalorias(42,156,19,"Femenino",2);
+	persona.calculaCalorias(42,156,19,"Mujer",2);
 //Ordenamientos
 	cout<<"\nEl orden alfabético de los alimentos es: "<<endl;
 	alimento.mostrarPorOrdenA(pruebas);
