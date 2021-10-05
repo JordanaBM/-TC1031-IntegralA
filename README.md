@@ -21,6 +21,13 @@ Ejemplo 1: Jordana Betancourt Menchaca
 
 ### **Obtenemos: 1566.125 Cal por día para Jordana**
 
+# SICT0302B: Toma decisiones
+
 ## Selecciona un algoritmo de ordenamiento adecuado al problema
 
-Para el problema se empleó un algoritmo de tipo merge sort, para ordenar alfabéticamente los alimentos por su nombre y otro para las calorías de menor a mayor, esto debido a que es rápido en la mayoría de los casos y porque es poco probable que me encuentre son su peor caso, ya que las lista inicial siempre estará medio desordenada y al añadir datos será desordenada. Las fuciones donde se puede ver es en mostrarPorCalorias y mostrarPorOrdenA en el archivo Alimentos.h las líneas 124 y 208.
+Para el problema se empleó un algoritmo de tipo merge sort, para ordenar alfabéticamente los alimentos por su nombre y otro para las calorías de menor a mayor, esto debido a que es rápido en la mayoría de los casos y porque es poco probable que me encuentre son su peor caso, ya que las lista inicial siempre estará medio desordenada y al añadir datos será desordenada. Las fuciones donde se puede ver es en mostrarPorCalorias y mostrarPorOrdenA en el archivo Alimentos.h las líneas 217 y 303 respectivamente.
+
+## Selecciona y usa una estructura lineal adecuada al problema
+
+Se emplea una lista doblemente encadenada para registrar Alimentos porque se quiere acceder rápidamente a los añadidos recientemente (head), pero también se necesita saber cual es la último en la lista (tail) , cada nodo es un objeto de tipo Alimento que contiene Tipo,Nombre y Calorías, los Alimentos se pueden insertar y eliminar usando la lista como se muestra en el código en las funciones eliminaAlimento, agregaAlimento y muestraRecientes, que se encuentran en el archivo Alimentos.h en las líneas 116,146 y 179 respectivamente.
+
