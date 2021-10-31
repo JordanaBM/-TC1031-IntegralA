@@ -4,8 +4,8 @@
  *  Created on: 12/09/2021
  *      Author: Jordana Betancourt Menchaca
  * 
- * La clase alimentos en donde se aplican los ordenamientos, a partir de la 
- * creación de objetos tipo Alimento en un vector
+ * La clase alimentos en donde se aplican los ordenamientos,  y métodos a partir 
+ * de la creación de objetos tipo Alimento en lista y árbol BST
  */
 
 #ifndef ALIMENTOS_H_
@@ -27,6 +27,7 @@ class Alimentos {
 private:
     vector <string> datos; //Para almacenar datos del archivo
     list<Alimento> alimentosR; //Lista doblemente ligada de Alimentos a partir de CSV
+	BST bst; //Árbol para encontrar alimentos con calorías similares 
 
     //Para los métodos de ordenamiento
     void swap(vector<Alimento> &, int, int);
@@ -42,16 +43,21 @@ public:
     list<Alimento>leerAlimentos();
 //Funciones para listas
 	//Función para eliminar nodo
-	void eliminaAlimento(string);
+	string eliminaAlimento(string);
 	//Función para insertar nodo
-	void agregaAlimento(Alimento);
-	//Función para mosntrar elementos de lista por más recientes
-	void mostrarRecientes();
+	string agregaAlimento(Alimento);
+	//Función para mostrar elementos de lista por más recientes
+	string mostrarRecientes();
 //Funciones para ordenamientos
     //Uso de merge sort para ordenamiento de alimentos por calorías o por orden 
     //alfabético
-    void mostrarPorCalorias(list<Alimento>); 
-    void mostrarPorOrdenA(list<Alimento>);
+    string mostrarPorCalorias(); 
+    string mostrarPorOrdenA();
+	//Recorrido inorder para encontrar Alimentos en un rango de calorías
+	string encuentraNombre(string nom);
+	string alimentosCalSimilares(int val);
+	string alimentoCalIgual(int val);
+
 };
 
 //Constructor default
@@ -79,7 +85,7 @@ Alimentos :: Alimentos(){
 list<Alimento> Alimentos::leerAlimentos(){
 
     //Se lee el archivo 
-    ifstream archivo("CaloriasAlimentosPrueba.csv");
+    ifstream archivo("CaloriasAlimentos.csv");
     string linea,cal;
     char delimitador = ',';
     vector <string> datos;
@@ -98,31 +104,36 @@ list<Alimento> Alimentos::leerAlimentos(){
 		//Los alimentos se agregan al principio de la lista para simular que
 		//son los que se agregaron recientemente
         alimentosR.push_front(aux); //Lista ligada de Alimentos
+		bst.add(aux); //Árbol Binario de Alimentos
     }
      archivo.close();	
     return alimentosR;
 }
 
-//Métodos de double linked list
+//Métodos de double linked list y árboles binarios
 /*
  * eliminaAlimento
  *
  * @param string nombre
- * @return void
+ * @return string
  * 
- * Elimina un nodo de la lista
+ * Elimina un nodo de la lista y árbol
  * 
 */
-void Alimentos:: eliminaAlimento(string nombre){
+string Alimentos:: eliminaAlimento(string nombre){
+	std::stringstream auxstr;
 	list<Alimento>::iterator it = alimentosR.begin();
 	int aux;
 	while( it != alimentosR.end() )
     {
 	//Si el iterador encuentra el nombre del Alimento a borrar elimina ese nodo
        if(it->get_nombre() == nombre){
-		   cout<<"El Alimento eliminado es: "<<endl;
-		   it->printAlimentos();
+		   auxstr <<"El Alimento eliminado es: "<<endl;
+		   auxstr << it->printAlimentos();
 		   alimentosR.erase(it);
+		   //Removemos objeto alimento del árbol
+		   bst.remove(*it);
+		   return auxstr.str();
 		   break;
 	   }
 	   it ++;
@@ -130,29 +141,33 @@ void Alimentos:: eliminaAlimento(string nombre){
 	//Si el iterador ya se encuentra al final de la lista y no hizo break
 	// significa que dicho elemento no existe.
 	if(it == alimentosR.end()){
-		 cout<<"Alimento "<<nombre<<" no ha sido encontrado en la lista.\n"<<endl;
-	}	
+		 auxstr<<"Alimento "<<nombre<<" no ha sido encontrado en la lista.\n"<<endl;
+	}
+	return auxstr.str();	
    
 }
 /*
- * añadeAlimento
+ * agregaAlimento
  *
  * @param Alimento nuevo
- * @return void
+ * @return string
  * 
  * Elimina un nodo de la lista
  * 
 */
-void Alimentos:: agregaAlimento(Alimento nuevo){
+string Alimentos:: agregaAlimento(Alimento nuevo){
+	std::stringstream aux;
 
-	cout<<"Último Alimento agregado "<<endl;
+	aux<<"Último Alimento agregado "<<endl;
 	list<Alimento>::iterator it = alimentosR.begin();
-	it->printAlimentos();
+	aux<< it->printAlimentos();
 	while( it != alimentosR.end() )
     {
-	//Para verificar que no existan Alimentos repetidos
-       if(it->get_nombre() == nuevo.get_nombre()){
-		   cout<<"\nAlimento "<<nuevo.get_nombre()<<" ya existe "<<endl;
+	/*Para verificar que no existan duplicados (Ya sea dos alimentos con mismo)
+	 nombre o calorías*/
+       if(it->get_calorias() == nuevo.get_calorias() || it->get_nombre() == nuevo.get_nombre()){
+		   aux<<"\nYa existe un alimento con ese nombre o calorías "<<endl;
+		   return aux.str();
 		   break;
 	   }
 	   it ++;
@@ -160,34 +175,101 @@ void Alimentos:: agregaAlimento(Alimento nuevo){
 	//Si el iterador ya se encuentra al final de la lista y no hizo break
 	// significa que dicho Alimento no existe y se puede agregar
 	if(it == alimentosR.end()){
+		//Agregamos alimento a la lista
 		alimentosR.push_front(nuevo);
+		//Agregamos alimento al árbol
+		bst.add(nuevo);
+		//Devolvemos el iterador al principio
 		it = alimentosR.begin();
-		cout<<"\nNuevo Alimento agregado "<<endl;
-		it->printAlimentos();
+		aux<<"\nNuevo Alimento agregado "<<endl;
+		//Imprimimos el último Alimento agregado
+		aux << it->printAlimentos();
+
+		//Escribimos el nuevo Alimento en el archivo .csv
+		ofstream misAlimentos;
+		misAlimentos.open("CaloriasAlimentos.csv", ios :: app);
+		misAlimentos<<nuevo.get_tipo()<<","<<nuevo.get_nombre()<<",";
+		misAlimentos<<nuevo.get_calorias()<<endl;
+		misAlimentos.close();
 	}	
- 	
+ 	return aux.str();
 }
 /*
  * mostrarRecientes
  *
- * @param list<Alimento>
- * @return void
+ * @param 
+ * @return string
  * 
  * Muestra los elementos agregados del más reciente al más antiguo
  * 
 */
-void Alimentos:: mostrarRecientes(){
-	
+string Alimentos:: mostrarRecientes(){
+	std::stringstream auxstr;
 	list<Alimento>::iterator it = alimentosR.begin();
-	int aux = 0;
+	int aux = 1;
 	while( it != alimentosR.end() )
     {
 	//Para imprimir todos los elementos de la lista
-       cout<<"\n"<<aux<<". ";
-	   it->printAlimentos();
+       auxstr<<"\n"<<aux<<". ";
+	   auxstr << it->printAlimentos();
 	   it ++;
 	   aux++;
 	}		
+	return auxstr.str();
+}
+/*
+ * encuentraNombre
+ *
+ * @param string nom
+ * @return string
+ * 
+ * Imprime alimento del nombre buscado
+ * 
+*/
+string Alimentos :: encuentraNombre(string nom){
+	std::stringstream aux;
+	list<Alimento>::iterator it = alimentosR.begin();
+	while( it != alimentosR.end() )
+    {
+	//Buscamos el nombre en la lista
+       if(it->get_nombre() == nom){
+		   aux<< it->printAlimentos();
+		   return aux.str();
+		   break;
+	   }
+	   it ++;
+	   if(it == alimentosR.end()){
+		   aux<<"Alimento no encontrado"<<endl;
+	   }
+	}
+	return aux.str();
+}
+/*
+ * alimentosCalSimilares
+ *
+ * @param int val
+ * @return string
+ * 
+ * Imprime alimentos en un rango de +-5 del valor de calorías dado
+ * 
+*/
+string Alimentos:: alimentosCalSimilares(int val){
+	//Llamamos el método calSimilar de la clase BST
+	 return bst.calSimilar(val);
+}
+
+/*
+ * alimentoCalIguale
+ *
+ * @param int val
+ * @return string
+ * 
+ * Imprime alimentos con calorías iguales a las ingresadas
+ * 
+*/
+string Alimentos:: alimentoCalIgual(int val){
+	//Llamamos al método buscaCal de la clase BST
+	return bst.buscaCal(val);
 }
 
 //Métodos de ordenamiento
@@ -210,19 +292,22 @@ void Alimentos::swap(vector<Alimento> &v, int i, int j) {
 /*
  * mostrarPorCalorias
  *
- * @param vector<Alimento> con referencia
- * @return 
+ * @param 
+ * @return string
  * 
 */
-void Alimentos :: mostrarPorCalorias(list<Alimento> pruebas){
+string Alimentos :: mostrarPorCalorias(){
+
+	std::stringstream aux;
 	
-	vector <Alimento> v(pruebas.begin(), pruebas.end());
+	vector <Alimento> v(alimentosR.begin(), alimentosR.end());
 	vector <Alimento> tmp(v.size());
 
 	mergeSplitCal(v, tmp, 0, v.size() - 1);
     for (int i = 0; i<v.size(); i++){
-        v[i].printAlimentos();  
+        aux << v[i].printAlimentos();  
     }
+	return aux.str();
 
 }
 
@@ -300,15 +385,24 @@ void Alimentos::copyVector(std::vector<Alimento> &A, std::vector<Alimento> &B, i
 }
 
 //Equivalente a un merge sort para ordenar alimentos alfabéticamente
-void Alimentos :: mostrarPorOrdenA(list<Alimento> pruebas){
-	
-	vector <Alimento> v(pruebas.begin(), pruebas.end());
+/*
+ * mostrarPorOrdenA
+ *
+ * @param 
+ * @return string
+ * 
+*/
+string Alimentos :: mostrarPorOrdenA(){
+	std::stringstream aux;
+
+	vector <Alimento> v(alimentosR.begin(), alimentosR.end());
 	vector <Alimento> tmp(v.size());
 
 	mergeSplitAlf(v, tmp, 0, v.size() - 1);
     for (int i = 0; i<v.size(); i++){
-        v[i].printAlimentos();  
+        aux << v[i].printAlimentos();  
     }
+	return aux.str();
 }
 
 /*
@@ -371,3 +465,4 @@ void Alimentos::mergeArrayAlf(std::vector<Alimento> &A, std::vector<Alimento> &B
 }
 
 #endif
+
